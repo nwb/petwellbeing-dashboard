@@ -1,0 +1,9 @@
+{
+  "name": "petwellbeing-dashboard",
+  "version": "1.0.0",
+  "description": "Pet Wellbeing Shopify Intelligence Dashboard",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  }
+}

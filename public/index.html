@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pet Wellbeing — Shopify Intelligence Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --sage: #4a7c59; --sage-light: #e8f0ea; --sage-mid: #7aaa8a;
+    --bark: #3d2e1e; --bark-light: #f5f0ea;
+    --gold: #c8923a; --gold-light: #fdf3e3;
+    --rose: #c4615a; --rose-light: #fcecea;
+    --ink: #1a1a1a; --muted: #6b6b6b; --faint: #f0ece6;
+    --border: rgba(60,46,30,0.12);
+    --card: #ffffff;
+    --radius: 14px;
+  }
+  html, body { height: 100%; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--faint); color: var(--ink); font-size: 14px; }
+
+  .shell { display: flex; height: 100vh; overflow: hidden; }
+
+  /* Sidebar */
+  .sidebar { width: 230px; background: var(--bark); display: flex; flex-direction: column; flex-shrink: 0; padding: 24px 0; overflow-y: auto; }
+  .logo { padding: 0 22px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 18px; }
+  .logo-mark { width: 36px; height: 36px; border-radius: 10px; background: var(--sage); display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 18px; }
+  .logo-name { font-family: 'DM Serif Display', serif; color: #fff; font-size: 17px; line-height: 1.2; }
+  .logo-sub { font-size: 10px; color: rgba(255,255,255,0.35); letter-spacing: .08em; text-transform: uppercase; margin-top: 3px; }
+  .nav-section { font-size: 9px; text-transform: uppercase; letter-spacing: .12em; color: rgba(255,255,255,0.22); padding: 18px 22px 6px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 22px; cursor: pointer; color: rgba(255,255,255,0.5); font-size: 13px; border-left: 2px solid transparent; transition: all .16s; user-select: none; }
+  .nav-item:hover { color: rgba(255,255,255,0.88); background: rgba(255,255,255,0.05); }
+  .nav-item.active { color: #fff; border-left-color: var(--sage-mid); background: rgba(255,255,255,0.09); font-weight: 500; }
+  .nav-icon { width: 15px; height: 15px; flex-shrink: 0; opacity: .8; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sage-mid); margin-left: auto; animation: pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .sidebar-footer { margin-top: auto; padding: 18px 22px 0; border-top: 1px solid rgba(255,255,255,0.07); }
+  .sidebar-footer p { font-size: 11px; color: rgba(255,255,255,0.25); line-height: 1.6; }
+
+  /* Main */
+  .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; min-width: 0; }
+  .topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 15px 28px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; position: sticky; top: 0; z-index: 10; }
+  .page-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--ink); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .store-badge { font-size: 11px; background: var(--sage-light); color: var(--sage); padding: 5px 12px; border-radius: 99px; font-weight: 500; }
+  .topbar-btn { font-size: 12px; background: none; border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; cursor: pointer; color: var(--muted); font-family: 'DM Sans', sans-serif; transition: all .14s; }
+  .topbar-btn:hover { border-color: var(--sage); color: var(--sage); }
+
+  .content { padding: 26px 28px 40px; flex: 1; }
+
+  /* Metrics */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+  .metric-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; position: relative; overflow: hidden; animation: fadeUp .35s ease both; }
+  .metric-card:nth-child(2){animation-delay:.06s} .metric-card:nth-child(3){animation-delay:.12s} .metric-card:nth-child(4){animation-delay:.18s}
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .metric-accent-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: var(--radius) var(--radius) 0 0; }
+  .metric-label { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 10px; }
+  .metric-val { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--ink); line-height: 1; }
+  .metric-sub { font-size: 11px; color: var(--muted); margin-top: 7px; }
+
+  /* Two col */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; animation: fadeUp .45s ease both; }
+  .panel-title { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 16px; font-weight: 500; }
+
+  /* Rows */
+  .product-row { display: flex; align-items: center; gap: 11px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .product-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .prod-img { width: 38px; height: 38px; border-radius: 9px; object-fit: cover; background: var(--faint); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; overflow: hidden; }
+  .prod-img img { width: 38px; height: 38px; object-fit: cover; border-radius: 9px; }
+  .prod-name { font-size: 13px; font-weight: 500; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prod-price { font-size: 13px; color: var(--sage); font-weight: 500; white-space: nowrap; }
+  .badge { font-size: 11px; padding: 3px 9px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
+  .badge-ok { background: var(--sage-light); color: var(--sage); }
+  .badge-low { background: var(--gold-light); color: var(--gold); }
+  .badge-out { background: var(--rose-light); color: var(--rose); }
+  .badge-paid { background: var(--sage-light); color: var(--sage); }
+  .badge-pending { background: var(--gold-light); color: var(--gold); }
+  .badge-refunded { background: var(--rose-light); color: var(--rose); }
+
+  .order-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .order-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .order-id { font-size: 12px; font-family: monospace; color: var(--muted); width: 54px; flex-shrink: 0; }
+  .order-name { font-size: 13px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .order-total { font-size: 13px; font-weight: 500; white-space: nowrap; }
+
+  /* Query */
+  .query-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 16px; }
+  .query-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 14px; font-weight: 500; }
+  .query-row { display: flex; gap: 10px; }
+  .query-input { flex: 1; border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--faint); color: var(--ink); outline: none; transition: border .14s, background .14s; }
+  .query-input:focus { border-color: var(--sage); background: #fff; }
+  .query-btn { background: var(--bark); color: #fff; border: none; border-radius: 10px; padding: 12px 22px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .15s; white-space: nowrap; }
+  .query-btn:hover:not(:disabled) { background: var(--sage); }
+  .query-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .suggestions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; }
+  .chip { font-size: 12px; border: 1px solid var(--border); border-radius: 99px; padding: 5px 13px; cursor: pointer; color: var(--muted); background: var(--faint); transition: all .14s; }
+  .chip:hover { border-color: var(--sage); color: var(--sage); background: var(--sage-light); }
+  .query-result { background: var(--bark-light); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; font-size: 13px; line-height: 1.75; white-space: pre-wrap; color: var(--ink); display: none; }
+  .query-result.show { display: block; animation: fadeUp .25s ease; }
+  .thinking { color: var(--muted); font-style: italic; }
+
+  /* Automations */
+  .auto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .auto-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
+  .auto-title { font-size: 15px; font-weight: 500; margin-bottom: 5px; }
+  .auto-desc { font-size: 12px; color: var(--muted); margin-bottom: 18px; line-height: 1.55; }
+  .form-group { margin-bottom: 13px; }
+  .form-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; display: block; }
+  .form-input { width: 100%; border: 1px solid var(--border); border-radius: 9px; padding: 10px 13px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--faint); color: var(--ink); outline: none; transition: border .14s, background .14s; }
+  .form-input:focus { border-color: var(--sage); background: #fff; }
+  textarea.form-input { resize: vertical; min-height: 96px; line-height: 1.6; }
+  .run-btn { width: 100%; background: var(--sage); color: #fff; border: none; border-radius: 10px; padding: 11px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: background .14s; }
+  .run-btn:hover:not(:disabled) { background: var(--bark); }
+  .run-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .auto-result { background: var(--faint); border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-top: 13px; font-size: 12px; line-height: 1.75; white-space: pre-wrap; display: none; color: var(--ink); }
+  .auto-result.show { display: block; animation: fadeUp .25s ease; }
+  .copy-btn { display: inline-block; margin-top: 8px; font-size: 11px; background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; color: var(--muted); font-family: 'DM Sans', sans-serif; transition: all .13s; }
+  .copy-btn:hover { border-color: var(--sage); color: var(--sage); }
+
+  /* Loading / error */
+  .loading-block { text-align: center; padding: 36px; color: var(--muted); font-size: 13px; }
+  .spinner { width: 26px; height: 26px; border: 2px solid var(--border); border-top-color: var(--sage); border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .error-banner { background: var(--rose-light); border: 1px solid rgba(196,97,90,.2); border-radius: 10px; padding: 13px 16px; font-size: 13px; color: var(--rose); margin-bottom: 18px; display: none; line-height: 1.55; }
+  .error-banner.show { display: block; }
+  .empty { color: var(--muted); font-size: 13px; padding: 12px 0; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .metrics { grid-template-columns: repeat(2,1fr); }
+    .two-col, .auto-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .sidebar { width: 60px; }
+    .logo-name, .logo-sub, .nav-section, .nav-item span, .sidebar-footer { display: none; }
+    .nav-item { justify-content: center; padding: 12px; }
+    .content { padding: 16px; }
+    .topbar { padding: 12px 16px; }
+    .store-badge { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">🐾</div>
+      <div class="logo-name">Pet Wellbeing</div>
+      <div class="logo-sub">Shopify Intelligence</div>
+    </div>
+
+    <div class="nav-section">Store</div>
+    <div class="nav-item active" onclick="showTab('dashboard', this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke-width="1.5"/></svg>
+      <span>Dashboard</span> <div class="status-dot"></div>
+    </div>
+    <div class="nav-item" onclick="showTab('products', this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 7H4a1 1 0 00-1 1v10a1 1 0 001 1h16a1 1 0 001-1V8a1 1 0 00-1-1z" stroke-width="1.5"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke-width="1.5"/></svg>
+      <span>Products</span>
+    </div>
+    <div class="nav-item" onclick="showTab('orders', this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-width="1.5"/></svg>
+      <span>Orders</span>
+    </div>
+    <div class="nav-item" onclick="showTab('customers', this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke-width="1.5"/></svg>
+      <span>Customers</span>
+    </div>
+
+    <div class="nav-section">AI Tools</div>
+    <div class="nav-item" onclick="showTab('query', this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke-width="1.5"/><path d="M11 8v3M11 14v.01" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>AI Query</span>
+    </div>
+    <div class="nav-item" onclick="showTab('automations', this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      <span>Automations</span>
+    </div>
+
+    <div class="sidebar-footer">
+      <p>Connected to Shopify<br>pet-wellbeing-redesign</p>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div class="topbar-right">
+        <div class="store-badge">pet-wellbeing-redesign.myshopify.com</div>
+        <button class="topbar-btn" onclick="loadAll()">↻ Refresh</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="error-banner" id="error-banner"></div>
+
+      <!-- Dashboard -->
+      <div id="tab-dashboard">
+        <div class="metrics">
+          <div class="metric-card"><div class="metric-accent-bar" style="background:var(--sage)"></div><div class="metric-label">Products</div><div class="metric-val" id="m-products">—</div><div class="metric-sub">in catalog</div></div>
+          <div class="metric-card"><div class="metric-accent-bar" style="background:var(--gold)"></div><div class="metric-label">Orders</div><div class="metric-val" id="m-orders">—</div><div class="metric-sub">fetched</div></div>
+          <div class="metric-card"><div class="metric-accent-bar" style="background:var(--bark)"></div><div class="metric-label">Customers</div><div class="metric-val" id="m-customers">—</div><div class="metric-sub">registered</div></div>
+          <div class="metric-card"><div class="metric-accent-bar" style="background:var(--rose)"></div><div class="metric-label">Revenue</div><div class="metric-val" id="m-revenue">—</div><div class="metric-sub">from fetched orders</div></div>
+        </div>
+        <div class="two-col">
+          <div class="panel"><div class="panel-title">Recent Products</div><div id="dash-products"><div class="loading-block"><div class="spinner"></div>Loading…</div></div></div>
+          <div class="panel"><div class="panel-title">Recent Orders</div><div id="dash-orders"><div class="loading-block"><div class="spinner"></div>Loading…</div></div></div>
+        </div>
+      </div>
+
+      <!-- Products -->
+      <div id="tab-products" style="display:none">
+        <div class="panel"><div class="panel-title">All Products</div><div id="all-products"><div class="loading-block"><div class="spinner"></div>Loading…</div></div></div>
+      </div>
+
+      <!-- Orders -->
+      <div id="tab-orders" style="display:none">
+        <div class="panel"><div class="panel-title">All Orders</div><div id="all-orders"><div class="loading-block"><div class="spinner"></div>Loading…</div></div></div>
+      </div>
+
+      <!-- Customers -->
+      <div id="tab-customers" style="display:none">
+        <div class="panel"><div class="panel-title">All Customers</div><div id="all-customers"><div class="loading-block"><div class="spinner"></div>Loading…</div></div></div>
+      </div>
+
+      <!-- AI Query -->
+      <div id="tab-query" style="display:none">
+        <div class="query-wrap">
+          <div class="query-label">Ask anything about your store</div>
+          <div class="query-row">
+            <input class="query-input" id="query-input" placeholder="e.g. Which products are low on stock? Show orders over $100…" onkeydown="if(event.key==='Enter')runQuery()"/>
+            <button class="query-btn" id="query-btn" onclick="runQuery()">Ask Claude</button>
+          </div>
+          <div class="suggestions">
+            <span class="chip" onclick="setQ('Which products have low or zero inventory?')">Low inventory</span>
+            <span class="chip" onclick="setQ('What are my 5 most expensive products?')">Top priced products</span>
+            <span class="chip" onclick="setQ('Show me recent unfulfilled orders')">Unfulfilled orders</span>
+            <span class="chip" onclick="setQ('Who are my top customers by total spend?')">Top customers</span>
+            <span class="chip" onclick="setQ('Summarise my total revenue and average order value')">Revenue summary</span>
+            <span class="chip" onclick="setQ('Which products are out of stock?')">Out of stock</span>
+            <span class="chip" onclick="setQ('How many orders were placed in the last 30 days?')">Recent orders</span>
+          </div>
+        </div>
+        <div class="query-result" id="query-result"></div>
+      </div>
+
+      <!-- Automations -->
+      <div id="tab-automations" style="display:none">
+        <div class="auto-grid">
+          <div class="auto-card">
+            <div class="auto-title">📦 Restock Alert Email</div>
+            <div class="auto-desc">Scan inventory for low-stock products and draft a supplier restock request email automatically.</div>
+            <div class="form-group">
+              <label class="form-label">Stock threshold (units)</label>
+              <input class="form-input" id="restock-threshold" type="number" value="10" min="1"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Supplier name (optional)</label>
+              <input class="form-input" id="supplier-name" placeholder="e.g. Nature's Best Supplies"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Supplier email (optional)</label>
+              <input class="form-input" id="supplier-email" placeholder="supplier@example.com"/>
+            </div>
+            <button class="run-btn" id="restock-btn" onclick="runRestock()">Generate Restock Email</button>
+            <div class="auto-result" id="restock-result"></div>
+          </div>
+
+          <div class="auto-card">
+            <div class="auto-title">💬 Customer Reply Generator</div>
+            <div class="auto-desc">Paste a customer message and Claude drafts a warm, on-brand reply in Pet Wellbeing's voice — knowledgeable, caring, science-informed.</div>
+            <div class="form-group">
+              <label class="form-label">Customer message</label>
+              <textarea class="form-input" id="customer-msg" placeholder="e.g. Hi, my dog has been taking Adrenal Harmony Gold for 2 weeks and I'm not seeing improvement yet. Should I continue?"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Order / context (optional)</label>
+              <input class="form-input" id="reply-context" placeholder="e.g. Order #1042, first-time customer, large dog breed"/>
+            </div>
+            <button class="run-btn" id="reply-btn" onclick="runReply()">Draft Reply</button>
+            <div class="auto-result" id="reply-result"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORE = 'pet-wellbeing-redesign.myshopify.com';
+
+  let storeData = { products: [], orders: [], customers: [] };
+
+  const pageTitles = { dashboard:'Dashboard', products:'Products', orders:'Orders', customers:'Customers', query:'AI Query', automations:'Automations' };
+
+  function showTab(tab, el) {
+    document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
+    document.getElementById('tab-' + tab).style.display = 'block';
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (el) el.classList.add('active');
+    document.getElementById('page-title').textContent = pageTitles[tab];
+  }
+
+  async function shopifyFetch(endpoint) {
+    // Uses the /api/shopify serverless proxy — no CORS issues
+    const res = await fetch(`/api/shopify?endpoint=${encodeURIComponent(endpoint)}`);
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    return await res.json();
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-banner');
+    el.innerHTML = `⚠ ${msg}`;
+    el.classList.add('show');
+  }
+  function hideError() { document.getElementById('error-banner').classList.remove('show'); }
+
+  function stockClass(qty) { return qty === 0 ? 'badge-out' : qty < 10 ? 'badge-low' : 'badge-ok'; }
+  function stockLabel(qty) { return qty === 0 ? 'Out of stock' : qty < 10 ? `Low · ${qty}` : `In stock · ${qty}`; }
+  function statusClass(s) { return s === 'paid' ? 'badge-paid' : s === 'pending' ? 'badge-pending' : 'badge-refunded'; }
+
+  function productRow(p) {
+    const price = parseFloat(p.variants?.[0]?.price || 0).toFixed(2);
+    const qty = (p.variants || []).reduce((s, v) => s + (parseInt(v.inventory_quantity) || 0), 0);
+    const img = p.image?.src;
+    return `<div class="product-row">
+      <div class="prod-img">${img ? `<img src="${img}" alt="">` : '🐾'}</div>
+      <div class="prod-name" title="${escHtml(p.title)}">${escHtml(p.title)}</div>
+      <div class="prod-price">$${price}</div>
+      <span class="badge ${stockClass(qty)}">${stockLabel(qty)}</span>
+    </div>`;
+  }
+
+  function orderRow(o) {
+    const s = o.financial_status || 'unknown';
+    const name = o.billing_address
+      ? `${o.billing_address.first_name || ''} ${o.billing_address.last_name || ''}`.trim()
+      : o.email || 'Guest';
+    return `<div class="order-row">
+      <div class="order-id">#${o.order_number}</div>
+      <div class="order-name">${escHtml(name || 'Guest')}</div>
+      <div class="order-total">$${parseFloat(o.total_price || 0).toFixed(2)}</div>
+      <span class="badge ${statusClass(s)}">${s}</span>
+    </div>`;
+  }
+
+  function customerRow(c) {
+    return `<div class="order-row">
+      <div class="order-id" style="width:70px;font-size:11px">${String(c.id||'').slice(-6)}</div>
+      <div class="order-name">${escHtml(`${c.first_name||''} ${c.last_name||''}`.trim())} <span style="color:var(--muted);font-size:11px">${escHtml(c.email||'')}</span></div>
+      <div class="order-total">${c.orders_count||0} orders</div>
+      <span class="badge badge-ok">$${parseFloat(c.total_spent||0).toFixed(0)}</span>
+    </div>`;
+  }
+
+  function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  async function loadAll() {
+    hideError();
+    try {
+      const [pd, od, cd] = await Promise.all([
+        shopifyFetch('products.json?limit=50'),
+        shopifyFetch('orders.json?limit=50&status=any'),
+        shopifyFetch('customers.json?limit=50')
+      ]);
+      storeData.products = pd.products || [];
+      storeData.orders = od.orders || [];
+      storeData.customers = cd.customers || [];
+      renderAll();
+    } catch(e) {
+      showError('Could not load Shopify data: ' + e.message + '. Try opening this file via a local server (e.g. <code>npx serve .</code>) or deploy it — browser security blocks direct Admin API calls from file:// URLs. The AI Query and Automations tabs work without live data.');
+    }
+  }
+
+  function renderAll() {
+    const { products, orders, customers } = storeData;
+    document.getElementById('m-products').textContent = products.length;
+    document.getElementById('m-orders').textContent = orders.length;
+    document.getElementById('m-customers').textContent = customers.length;
+    const rev = orders.reduce((s, o) => s + parseFloat(o.total_price || 0), 0);
+    document.getElementById('m-revenue').textContent = '$' + rev.toLocaleString('en-CA', { maximumFractionDigits: 0 });
+    const ph = '<p class="empty">No data found.</p>';
+    document.getElementById('dash-products').innerHTML = products.slice(0,6).map(productRow).join('') || ph;
+    document.getElementById('dash-orders').innerHTML = orders.slice(0,6).map(orderRow).join('') || ph;
+    document.getElementById('all-products').innerHTML = products.map(productRow).join('') || ph;
+    document.getElementById('all-orders').innerHTML = orders.map(orderRow).join('') || ph;
+    document.getElementById('all-customers').innerHTML = customers.map(customerRow).join('') || ph;
+  }
+
+  function setQ(q) { document.getElementById('query-input').value = q; document.getElementById('query-input').focus(); }
+
+  async function callClaude(system, userMsg) {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system,
+        messages: [{ role: 'user', content: userMsg }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.content?.[0]?.text || 'No response received.';
+  }
+
+  function storeSnapshot() {
+    const { products, orders, customers } = storeData;
+    return `Store: ${STORE}
+Products (${products.length} total): ${JSON.stringify(products.slice(0,25).map(p => ({
+  title: p.title,
+  price: p.variants?.[0]?.price,
+  inventory: (p.variants||[]).reduce((s,v) => s+(parseInt(v.inventory_quantity)||0),0),
+  status: p.status,
+  sku: p.variants?.[0]?.sku
+})))}
+Orders (${orders.length} total): ${JSON.stringify(orders.slice(0,25).map(o => ({
+  number: o.order_number,
+  total: o.total_price,
+  financial: o.financial_status,
+  fulfillment: o.fulfillment_status,
+  email: o.email,
+  date: o.created_at?.slice(0,10)
+})))}
+Customers (${customers.length} total): ${JSON.stringify(customers.slice(0,25).map(c => ({
+  name: `${c.first_name||''} ${c.last_name||''}`.trim(),
+  email: c.email,
+  orders: c.orders_count,
+  spent: c.total_spent
+})))}`;
+  }
+
+  async function runQuery() {
+    const q = document.getElementById('query-input').value.trim();
+    if (!q) return;
+    const btn = document.getElementById('query-btn');
+    const result = document.getElementById('query-result');
+    btn.disabled = true; btn.textContent = 'Thinking…';
+    result.className = 'query-result show';
+    result.innerHTML = '<span class="thinking">Claude is analysing your store data…</span>';
+    try {
+      const answer = await callClaude(
+        'You are a Shopify store analyst for Pet Wellbeing, a holistic pet supplement brand (petwellbeing.com, founded 2001). You have access to live store data provided by the user. Answer questions clearly and concisely using plain text. Be specific with numbers. If data seems incomplete or unavailable, say so.',
+        `Store data:\n${storeSnapshot()}\n\nQuestion: ${q}`
+      );
+      result.textContent = answer;
+    } catch(e) {
+      result.textContent = 'Error: ' + e.message;
+    }
+    btn.disabled = false; btn.textContent = 'Ask Claude';
+  }
+
+  async function runRestock() {
+    const threshold = parseInt(document.getElementById('restock-threshold').value) || 10;
+    const supplierName = document.getElementById('supplier-name').value || 'Supplier';
+    const supplierEmail = document.getElementById('supplier-email').value || 'supplier@example.com';
+    const btn = document.getElementById('restock-btn');
+    const result = document.getElementById('restock-result');
+    btn.disabled = true; btn.textContent = 'Generating…';
+    result.className = 'auto-result show';
+    result.innerHTML = '<span class="thinking">Scanning inventory and drafting email…</span>';
+
+    const lowStock = storeData.products
+      .map(p => ({ title: p.title, sku: p.variants?.[0]?.sku || 'N/A', qty: (p.variants||[]).reduce((s,v)=>s+(parseInt(v.inventory_quantity)||0),0) }))
+      .filter(p => p.qty <= threshold);
+
+    try {
+      const email = await callClaude(
+        'You are a store operations assistant for Pet Wellbeing (petwellbeing.com). Draft professional, concise supplier emails.',
+        `Draft a restock request email to ${supplierName} (${supplierEmail}) for these low/zero-stock products (threshold: ${threshold} units):\n${JSON.stringify(lowStock)}\n\nInclude: product names, SKUs, current qty, suggested reorder (3× current or minimum 50 units). Sign off as "Pet Wellbeing Operations Team". Keep it professional and concise.${lowStock.length === 0 ? '\n\nNote: No products are below the threshold — mention this in the email.' : ''}`
+      );
+      result.innerHTML = escHtml(email) + `<br><button class="copy-btn" onclick="copyText('restock-result-text')">Copy email</button>`;
+      result.dataset.text = email;
+    } catch(e) {
+      result.textContent = 'Error: ' + e.message;
+    }
+    btn.disabled = false; btn.textContent = 'Generate Restock Email';
+  }
+
+  async function runReply() {
+    const msg = document.getElementById('customer-msg').value.trim();
+    const ctx = document.getElementById('reply-context').value.trim();
+    if (!msg) { alert('Please paste a customer message first.'); return; }
+    const btn = document.getElementById('reply-btn');
+    const result = document.getElementById('reply-result');
+    btn.disabled = true; btn.textContent = 'Drafting…';
+    result.className = 'auto-result show';
+    result.innerHTML = '<span class="thinking">Drafting reply in Pet Wellbeing brand voice…</span>';
+    try {
+      const reply = await callClaude(
+        'You are a customer care specialist for Pet Wellbeing (petwellbeing.com), a holistic pet supplement brand founded in 2001. Brand voice: warm, knowledgeable, caring, science-informed but accessible. Always recommend consulting a vet for medical concerns. Never make specific medical claims. Be empathetic and concise.',
+        `Draft a customer service reply to this message:\n\n"${msg}"\n\nContext: ${ctx || 'No additional context'}\n\nAim for 3–5 sentences unless more detail is genuinely needed. Sign off warmly.`
+      );
+      result.innerHTML = escHtml(reply) + `<br><button class="copy-btn" onclick="copyText2(this)">Copy reply</button>`;
+      result.dataset.reply = reply;
+    } catch(e) {
+      result.textContent = 'Error: ' + e.message;
+    }
+    btn.disabled = false; btn.textContent = 'Draft Reply';
+  }
+
+  function copyText2(btn) {
+    const result = btn.closest('.auto-result');
+    navigator.clipboard.writeText(result.dataset.reply || '').then(() => { btn.textContent = '✓ Copied'; setTimeout(()=>btn.textContent='Copy reply',2000); });
+  }
+
+  // Init
+  loadAll();
+</script>
+</body>
+</html>
