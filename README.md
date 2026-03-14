@@ -18,7 +18,7 @@ cd petwellbeing-dashboard
 git init
 git add .
 git commit -m "Initial dashboard"
-git remote add origin https://github.com/YOUR_USERNAME/petwellbeing-dashboard.git
+git remote add origin https://github.com/nwb/petwellbeing-dashboard.git
 git push -u origin main
 ```
 
