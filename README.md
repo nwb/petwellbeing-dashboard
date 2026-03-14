@@ -4,7 +4,7 @@ An AI-powered Shopify dashboard for Pet Wellbeing with live product/order/custom
 
 ## ▶ One-Click Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/petwellbeing-dashboard&env=SHOPIFY_STORE,SHOPIFY_TOKEN&envDescription=Your%20Shopify%20store%20credentials&project-name=petwellbeing-dashboard)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/nwb/petwellbeing-dashboard&env=SHOPIFY_STORE,SHOPIFY_TOKEN&envDescription=Your%20Shopify%20store%20credentials&project-name=petwellbeing-dashboard)
 
 > **Before clicking:** Push this folder to a GitHub repo first, then replace `YOUR_USERNAME` in the URL above.
 
