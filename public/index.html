@@ -308,7 +308,7 @@
 
   async function shopifyFetch(endpoint) {
     // Uses the /api/shopify serverless proxy — no CORS issues
-    const res = await fetch(`/api/shopify?endpoint=${encodeURIComponent(endpoint)}`);
+    const res = await fetch(`/api/shopify.js?endpoint=${encodeURIComponent(endpoint)}`);
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
     return await res.json();
   }
